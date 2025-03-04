@@ -1,0 +1,24 @@
+[
+  {
+    "arguments": [
+      "/usr/bin/g++",
+      "-c",
+      "-I./include/",
+      "-g",
+      "main.cpp"
+    ],
+    "directory": "/home/tututu/qimeng/dynamic_schedule",
+    "file": "/home/tututu/qimeng/dynamic_schedule/main.cpp"
+  },
+  {
+    "arguments": [
+      "/usr/bin/g++",
+      "-c",
+      "-I./include/",
+      "-g",
+      "IQ.cpp"
+    ],
+    "directory": "/home/tututu/qimeng/dynamic_schedule",
+    "file": "/home/tututu/qimeng/dynamic_schedule/IQ.cpp"
+  }
+]
