@@ -1,4 +1,5 @@
 #include "./IQ.h"
+#include "./ISU.h"
 #include <cmath>
 #include <cstdint>
 #include <fstream>
@@ -9,9 +10,7 @@ typedef struct {
   int num;
 } Itrace_Node;
 
-int max_fu_latency[FU_TYPE_NUM] = {1, 100, 100};
-
-IQ iq;
+ISU isu;
 
 int main() {
 
@@ -41,7 +40,7 @@ int main() {
     exit(1);
   }
 
-  iq.init();
+  isu.reset();
 
   int i = 0;
   int time = 0;
@@ -58,27 +57,36 @@ int main() {
         cout << "********************" << endl;
         cout << "-- TIME: " << dec << time << " --" << endl;
       }
-      iq.deq();
-      iq.exec();
-      if (!iq.is_full()) {
-        do {
-          iq.enq(pc, inst[(pc - 0x80000000) >> 2]);
+      isu.exec();
+      isu.deq();
+      do {
+        bool ret = isu.dispatch(pc, inst[(pc - 0x80000000) >> 2]);
+
+        if (ret == false) {
+          break;
+        } else {
           pc += 4;
           j++;
-        } while (j < block_len && (pc & 0b1100) && !iq.is_full());
-      }
+        }
+      } while (j < block_len && (pc & 0b1100));
       time++;
-      if (i % 10000 == 0)
-        iq.print();
+
+      if (LOG)
+        isu.print();
+      /*if (time % 10000 == 0) {*/
+      /*  isu.print();*/
+      /*  cout << endl;*/
+      /*}*/
     }
   }
 
   if (time == MAX_SIM_TIME) {
     cout << "TIME OUT" << endl;
   } else {
-    while (iq.is_empty()) {
-      iq.deq();
-      iq.exec();
+
+    while (!isu.is_empty()) {
+      isu.deq();
+      isu.exec();
       time++;
     }
 

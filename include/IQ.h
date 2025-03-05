@@ -1,14 +1,12 @@
+#pragma once
+
 #include <cstdint>
 #include <list>
-#include <vector>
 
 #define INST_EBREAK 0x00100073
-
 #define MAX_PREG 96
-#define MAX_IQ_ENTRY_NUM 64
-#define MAX_SIM_TIME 100000000
+#define MAX_SIM_TIME 500000
 #define FETCH_WIDTH 4
-#define STQ_ENTRY_NUM 8
 
 using namespace std;
 
@@ -77,24 +75,20 @@ public:
 };
 
 class IQ {
-
-  FU *fu_set[FU_TYPE_NUM];
-  int enq_ptr = 0;
-  list<Inst_Entry> entry;
-  vector<bool> busy_table;
-
 public:
-  vector<uint32_t> idle_reg;
-  vector<uint32_t> rename_table;
-  void init();
+  Fu_Type type;
+  int fu_num;
+  int max_entry_num;
+  list<Inst_Entry> entry;
+  FU *fu_set;
+  void init(Fu_Type type, int entry_num, int fu_num);
   bool is_full();
   bool is_empty();
-  void enq(uint32_t pc, uint32_t inst);
-  void scheduler(Fu_Type type);
+  void enq(Inst_Entry new_entry);
+  void scheduler();
   void issue(list<Inst_Entry>::iterator it, FU *fu);
   void deq();
   void exec();
   void print();
-  void rename(Inst_Entry &inst);
   void awake(uint32_t dest_preg);
 };

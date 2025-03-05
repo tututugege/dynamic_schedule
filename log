@@ -1,0 +1,3 @@
+g++ -I./include/ main.cpp IQ.cpp ISU.cpp -g
+./a.out
+TIME OUT
