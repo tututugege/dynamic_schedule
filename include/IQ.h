@@ -5,7 +5,7 @@
 
 #define INST_EBREAK 0x00100073
 #define MAX_PREG 96
-#define MAX_SIM_TIME 500000
+#define MAX_SIM_TIME 5000000
 #define FETCH_WIDTH 4
 
 using namespace std;

@@ -15,7 +15,7 @@ ISU isu;
 int main() {
 
   // 加载指令trace
-  ifstream trace("./inst_trace", ios::binary | ios::ate);
+  ifstream trace("./dry_trace", ios::binary | ios::ate);
   streamsize size = trace.tellg();
   int trace_num = size / sizeof(Itrace_Node);
   Itrace_Node inst_trace[trace_num];
@@ -71,11 +71,10 @@ int main() {
       } while (j < block_len && (pc & 0b1100));
       time++;
 
-      if (LOG)
-        isu.print();
+      /*if (LOG)*/
+      /*  isu.print();*/
       /*if (time % 10000 == 0) {*/
       /*  isu.print();*/
-      /*  cout << endl;*/
       /*}*/
     }
   }

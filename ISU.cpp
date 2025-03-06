@@ -47,12 +47,6 @@ void ISU::rename(Inst_Entry &inst) {
 
 bool ISU::dispatch(uint32_t pc, uint32_t inst) {
   Inst_Entry new_entry = decode(inst);
-  if (LOG)
-    cout << "派遣指令" << hex << inst << endl;
-
-  new_entry.pc = pc;
-  new_entry.pre_store_num = 0;
-  rename(new_entry);
 
   for (auto &iq : iq_set) {
     if (iq.type == new_entry.type) {
@@ -68,6 +62,13 @@ bool ISU::dispatch(uint32_t pc, uint32_t inst) {
           }
         }
       }
+
+      if (LOG)
+        cout << "派遣指令" << hex << inst << endl;
+
+      new_entry.pc = pc;
+      new_entry.pre_store_num = 0;
+      rename(new_entry);
       iq.enq(new_entry);
       break;
     }
@@ -235,6 +236,7 @@ void ISU::print() {
 
   for (int i = 0; i < busy_table.size(); i++) {
     cout << hex << i << ": ";
-    cout << busy_table[i] << ": " << endl;
+    cout << busy_table[i] << " ";
   }
+  cout << endl;
 }

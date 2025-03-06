@@ -43,13 +43,13 @@ void IQ::issue(list<Inst_Entry>::iterator it, FU *fu) {
   } else if (it->type == LDU) {
     fu->latency = 2;
   } else if (it->type == STU) {
-    fu->latency = 1;
+    fu->latency = 6;
   }
 
   if (LOG)
     cout << "发射指令" << hex << it->instruction << endl;
 
-  if (it->dest_en) {
+  if (it->dest_en && it->type != LDU) {
     isu.awake(it->dest_preg);
   }
 }
@@ -97,9 +97,9 @@ void IQ::exec() {
 
         if (fu_set[i].inst.dest_en) {
           isu.idle_reg.push_back(fu_set[i].inst.old_dest_preg);
-          /*if (fu_set[i].inst.type == LDU) {*/
-          /*  isu.awake(fu_set[i].inst.dest_preg);*/
-          /*}*/
+          if (fu_set[i].inst.type == LDU) {
+            isu.awake(fu_set[i].inst.dest_preg);
+          }
         }
 
         if (LOG)
