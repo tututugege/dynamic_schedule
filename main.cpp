@@ -16,7 +16,7 @@ IQ iq;
 int main() {
 
   // 加载指令trace
-  ifstream trace("./inst_trace", ios::binary | ios::ate);
+  ifstream trace("./core_trace", ios::binary | ios::ate);
   streamsize size = trace.tellg();
   int trace_num = size / sizeof(Itrace_Node);
   Itrace_Node inst_trace[trace_num];
@@ -43,7 +43,6 @@ int main() {
 
   iq.init();
 
-  int i = 0;
   int time = 0;
   int commit_num = 0;
 
@@ -58,8 +57,8 @@ int main() {
         cout << "********************" << endl;
         cout << "-- TIME: " << dec << time << " --" << endl;
       }
-      iq.deq();
       iq.exec();
+      iq.deq();
       if (!iq.is_full()) {
         do {
           iq.enq(pc, inst[(pc - 0x80000000) >> 2]);
@@ -68,8 +67,8 @@ int main() {
         } while (j < block_len && (pc & 0b1100) && !iq.is_full());
       }
       time++;
-      if (i % 10000 == 0)
-        iq.print();
+      /*if (time % 10000 == 0)*/
+      /*  iq.print();*/
     }
   }
 

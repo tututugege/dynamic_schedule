@@ -96,7 +96,7 @@ void IQ::issue(list<Inst_Entry>::iterator it, FU *fu) {
   } else if (it->type == LDU) {
     fu->latency = 2;
   } else if (it->type == STU) {
-    fu->latency = 5;
+    fu->latency = 7;
   }
 
   if (LOG)
@@ -279,8 +279,8 @@ Inst_Entry decode(uint32_t inst) {
   }
 
   default: {
-    cerr << "Error: unknown instruction: ";
-    cerr << hex << inst << endl;
+    /*cerr << "Error: unknown instruction: ";*/
+    /*cerr << hex << inst << endl;*/
     /*assert(0);*/
     break;
   }
