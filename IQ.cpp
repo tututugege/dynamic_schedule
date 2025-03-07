@@ -59,9 +59,9 @@ void IQ::issue(list<Inst_Entry>::iterator it, FU *fu) {
   if (it->type == ALU || it->type == BRU) {
     fu->latency = 1;
   } else if (it->type == LDU) {
-    fu->latency = 1;
+    fu->latency = 4;
   } else if (it->type == STU) {
-    fu->latency = 1;
+    fu->latency = 2;
   }
 
   if (LOG) {

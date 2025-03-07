@@ -1,5 +1,5 @@
 #include <cstdint>
-#define BHR_WIDTH 7
+#define BHR_WIDTH 12
 
 class BPU {
   uint8_t counter[1 << BHR_WIDTH];

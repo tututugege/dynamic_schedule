@@ -17,6 +17,8 @@ int br_idx = 0;
 bool sim_end = false;
 bool stall = false;
 int commit_num = 0;
+int branch_num = 0;
+int mispred_num = 0;
 
 Inst_Entry decode(uint32_t inst);
 
@@ -75,15 +77,20 @@ int main() {
 
         if (dec_inst.type == BRU) {
           // 检查分支预测是否正确
+          branch_num++;
           bpu.bpu(number_PC, next_pc, br_taken);
+          bpu.bpu_update(number_PC, br_trace[br_idx].br_pc,
+                         br_trace[br_idx].br_pc != number_PC + 4);
+
           if (br_trace[br_idx].br_pc != next_pc) {
             number_PC = br_trace[br_idx].br_pc;
-            br_idx++;
             stall = true;
             dec_inst.mispred = true;
+            mispred_num++;
           } else {
             dec_inst.mispred = false;
           }
+          br_idx++;
         } else {
           next_pc = number_PC + 4;
           dec_inst.mispred = false;
@@ -137,6 +144,8 @@ int main() {
     cout << "CYCLE: " << dec << time << endl;
     cout << "INST : " << dec << commit_num << endl;
     cout << "IPC  : " << (double)commit_num / time << endl;
+    cout << "BRANCH : " << dec << branch_num << endl;
+    cout << "MISPRED: " << dec << mispred_num << endl;
   }
 
   return 0;
