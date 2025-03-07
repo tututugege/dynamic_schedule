@@ -7,6 +7,7 @@
 
 Inst_Entry decode(uint32_t inst);
 extern ISU isu;
+extern int commit_num;
 
 void IQ::init(Fu_Type type, int entry_num, int fu_num) {
   this->type = type;
@@ -58,9 +59,9 @@ void IQ::issue(list<Inst_Entry>::iterator it, FU *fu) {
   if (it->type == ALU || it->type == BRU) {
     fu->latency = 1;
   } else if (it->type == LDU) {
-    fu->latency = 4;
+    fu->latency = 1;
   } else if (it->type == STU) {
-    fu->latency = 2;
+    fu->latency = 1;
   }
 
   if (LOG) {
@@ -126,6 +127,9 @@ void IQ::deq() {
 #endif
 }
 
+extern bool stall;
+extern bool sim_end;
+
 void IQ::exec() {
   for (int i = 0; i < fu_num; i++) {
     if (fu_set[i].ready == false) {
@@ -134,6 +138,15 @@ void IQ::exec() {
       // 执行完毕
       if (fu_set[i].latency == 0) {
         fu_set[i].ready = true;
+
+        // EBREAK
+        if (fu_set[i].inst.ebarek)
+          sim_end = true;
+
+        // 检查出分支预测错误
+        if (fu_set[i].type == BRU && fu_set[i].inst.mispred) {
+          stall = false;
+        }
 
         if (fu_set[i].inst.dest_en) {
           isu.idle_reg.push_back(fu_set[i].inst.old_dest_preg);
@@ -147,6 +160,7 @@ void IQ::exec() {
         if (type == STU) {
           isu.store_awake();
         }
+        commit_num++;
       }
     }
   }

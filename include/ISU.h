@@ -8,7 +8,7 @@ class ISU {
 public:
   void reset();
   bool is_empty();
-  bool dispatch(uint32_t pc, uint32_t inst);
+  bool dispatch(Inst_Entry e);
   void deq();
   void print();
   void exec();

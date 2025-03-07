@@ -67,6 +67,12 @@ public:
   bool src1_busy, src2_busy;
   uint32_t addr;
   int pre_store_num;
+  bool mispred;
+  bool ebarek;
+
+  // 分支信息
+  uint32_t br_pc;
+  bool br_taken;
 
   // 调度信息
   int dependency = 0;
