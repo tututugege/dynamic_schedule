@@ -22,6 +22,23 @@ void IQ::init(Fu_Type type, int entry_num, int fu_num) {
 
 void IQ::enq(Inst_Entry new_entry) { entry.push_back(new_entry); }
 
+void IQ::add_depend(uint32_t preg) {
+  for (auto &e : entry) {
+    if (e.dest_en && e.dest_preg == preg) {
+      e.dependency++;
+#ifdef CONFIG_LONG_DEPEND
+      if (e.src1_en && e.src1_busy) {
+        add_depend(e.src1_preg);
+      }
+
+      if (e.src2_en && e.src2_busy) {
+        add_depend(e.src2_preg);
+      }
+#endif
+    }
+  }
+}
+
 void IQ::awake(uint32_t dest_preg) {
   for (auto &e : entry) {
     if (e.src1_en && e.src1_preg == dest_preg) {
@@ -41,13 +58,14 @@ void IQ::issue(list<Inst_Entry>::iterator it, FU *fu) {
   if (it->type == ALU || it->type == BRU) {
     fu->latency = 1;
   } else if (it->type == LDU) {
-    fu->latency = 2;
+    fu->latency = 4;
   } else if (it->type == STU) {
-    fu->latency = 6;
+    fu->latency = 2;
   }
 
-  if (LOG)
+  if (LOG) {
     cout << "发射指令" << hex << it->instruction << endl;
+  }
 
   if (it->dest_en && it->type != LDU) {
     isu.awake(it->dest_preg);
@@ -67,6 +85,7 @@ void IQ::deq() {
   int issue_num = 0;
   vector<list<Inst_Entry>::iterator> issue_it;
 
+#ifdef CONFIG_OLDEST_FIRST
   for (auto it = entry.begin(); it != entry.end();) {
     if (issue_num == idle_fu_num)
       break;
@@ -84,6 +103,27 @@ void IQ::deq() {
   for (auto it : issue_it) {
     entry.erase(it);
   }
+
+#elif defined(CONFIG_MAX_DEPEND) || defined(CONFIG_LONG_DEPEND)
+  while (issue_num < idle_fu_num) {
+    int max_dependency = -1;
+    list<Inst_Entry>::iterator max_dep_it = entry.end();
+    for (auto it = entry.begin(); it != entry.end(); it++) {
+      if (it->dependency > max_dependency) {
+        max_dependency = it->dependency;
+        max_dep_it = it;
+      }
+    }
+
+    if (max_dep_it != entry.end()) {
+      issue(max_dep_it, &fu_set[idle_fu_idx[issue_num++]]);
+      entry.erase(max_dep_it);
+    } else {
+      break;
+    }
+  }
+
+#endif
 }
 
 void IQ::exec() {

@@ -5,8 +5,11 @@
 
 #define INST_EBREAK 0x00100073
 #define MAX_PREG 96
-#define MAX_SIM_TIME 5000000
+#define MAX_SIM_TIME 1000000
 #define FETCH_WIDTH 4
+/*#define CONFIG_OLDEST_FIRST*/
+/*#define CONFIG_MAX_DEPEND*/
+#define CONFIG_LONG_DEPEND
 
 using namespace std;
 
@@ -64,6 +67,9 @@ public:
   bool src1_busy, src2_busy;
   uint32_t addr;
   int pre_store_num;
+
+  // 调度信息
+  int dependency = 0;
 };
 
 class FU {
@@ -91,4 +97,5 @@ public:
   void exec();
   void print();
   void awake(uint32_t dest_preg);
+  void add_depend(uint32_t preg);
 };

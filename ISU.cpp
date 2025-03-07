@@ -26,12 +26,22 @@ void ISU::reset() {
 
 void ISU::rename(Inst_Entry &inst) {
   // rename
-  inst.src1_preg = rename_table[inst.src1_areg];
-  inst.src2_preg = rename_table[inst.src2_areg];
-  inst.old_dest_preg = rename_table[inst.dest_areg];
+  if (inst.src1_en) {
+    inst.src1_preg = rename_table[inst.src1_areg];
+    inst.src1_busy = busy_table[inst.src1_preg];
+  } else {
+    inst.src1_busy = false;
+  }
 
-  inst.src1_busy = busy_table[inst.src1_preg];
-  inst.src2_busy = busy_table[inst.src2_preg];
+  if (inst.src2_en) {
+    inst.src2_preg = rename_table[inst.src2_areg];
+    inst.src2_busy = busy_table[inst.src2_preg];
+  } else {
+    inst.src2_busy = false;
+  }
+
+  if (inst.dest_en)
+    inst.old_dest_preg = rename_table[inst.dest_areg];
 
   if (inst.dest_en) {
     if (idle_reg.size() == 0) {
@@ -70,7 +80,18 @@ bool ISU::dispatch(uint32_t pc, uint32_t inst) {
       new_entry.pre_store_num = 0;
       rename(new_entry);
       iq.enq(new_entry);
-      break;
+
+      if (new_entry.src1_en && new_entry.src1_busy) {
+        for (auto &iq : iq_set) {
+          iq.add_depend(new_entry.src1_preg);
+        }
+      }
+
+      if (new_entry.src2_en && new_entry.src2_busy) {
+        for (auto &iq : iq_set) {
+          iq.add_depend(new_entry.src2_preg);
+        }
+      }
     }
   }
 

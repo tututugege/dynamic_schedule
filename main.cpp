@@ -15,7 +15,7 @@ ISU isu;
 int main() {
 
   // 加载指令trace
-  ifstream trace("./dry_trace", ios::binary | ios::ate);
+  ifstream trace("./core_trace", ios::binary | ios::ate);
   streamsize size = trace.tellg();
   int trace_num = size / sizeof(Itrace_Node);
   Itrace_Node inst_trace[trace_num];
@@ -28,7 +28,7 @@ int main() {
   }
 
   // 加载程序
-  ifstream image("./dry.bin", ios::binary | ios::ate);
+  ifstream image("./coremark.bin", ios::binary | ios::ate);
   size = image.tellg();
   int inst_num = size / sizeof(uint32_t);
   image.seekg(0, ios::beg);
