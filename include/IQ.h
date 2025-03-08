@@ -7,9 +7,10 @@
 #define MAX_PREG 96
 #define MAX_SIM_TIME 1000000
 #define FETCH_WIDTH 4
-#define CONFIG_OLDEST_FIRST
+/*#define CONFIG_OLDEST_FIRST*/
 /*#define CONFIG_MAX_DEPEND*/
 /*#define CONFIG_LONG_DEPEND*/
+#define CONFIG_BR_DEPEND
 
 using namespace std;
 

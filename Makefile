@@ -1,5 +1,5 @@
 all:
-	g++ -I./include/ main.cpp IQ.cpp ISU.cpp BPU.cpp -g
+	g++ -I./include/ main.cpp IQ.cpp ISU.cpp BPU.cpp Cache.cpp -g
 run: all
 	./a.out
 

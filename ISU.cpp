@@ -56,7 +56,6 @@ void ISU::rename(Inst_Entry &inst) {
 }
 
 bool ISU::dispatch(Inst_Entry e) {
-
   for (auto &iq : iq_set) {
     if (iq.type == e.type) {
       if (iq.is_full())
@@ -79,6 +78,22 @@ bool ISU::dispatch(Inst_Entry e) {
       rename(e);
       iq.enq(e);
 
+#ifdef CONFIG_BR_DEPEND
+      if (e.type == BRU && e.mispred) {
+        if (e.src1_en && e.src1_busy) {
+          for (auto &iq : iq_set) {
+            iq.add_depend(e.src1_preg);
+          }
+        }
+
+        if (e.src2_en && e.src2_busy) {
+          for (auto &iq : iq_set) {
+            iq.add_depend(e.src2_preg);
+          }
+        }
+      }
+#else
+
       if (e.src1_en && e.src1_busy) {
         for (auto &iq : iq_set) {
           iq.add_depend(e.src1_preg);
@@ -90,6 +105,8 @@ bool ISU::dispatch(Inst_Entry e) {
           iq.add_depend(e.src2_preg);
         }
       }
+
+#endif
     }
   }
 

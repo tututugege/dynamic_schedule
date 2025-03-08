@@ -1,3 +1,4 @@
+#include <Cache.h>
 #include <IQ.h>
 #include <ISU.h>
 #include <csignal>
@@ -27,7 +28,7 @@ void IQ::add_depend(uint32_t preg) {
   for (auto &e : entry) {
     if (e.dest_en && e.dest_preg == preg) {
       e.dependency++;
-#ifdef CONFIG_LONG_DEPEND
+#if defined(CONFIG_LONG_DEPEND) || defined(CONFIG_BR_DEPEND)
       if (e.src1_en && e.src1_busy) {
         add_depend(e.src1_preg);
       }
@@ -52,6 +53,7 @@ void IQ::awake(uint32_t dest_preg) {
   }
 }
 
+extern Cache cache;
 void IQ::issue(list<Inst_Entry>::iterator it, FU *fu) {
 
   fu->ready = false;
@@ -59,9 +61,9 @@ void IQ::issue(list<Inst_Entry>::iterator it, FU *fu) {
   if (it->type == ALU || it->type == BRU) {
     fu->latency = 1;
   } else if (it->type == LDU) {
-    fu->latency = 4;
+    fu->latency = cache.cache_read(it->addr);
   } else if (it->type == STU) {
-    fu->latency = 2;
+    fu->latency = cache.cache_read(it->addr);
   }
 
   if (LOG) {
@@ -105,7 +107,8 @@ void IQ::deq() {
     entry.erase(it);
   }
 
-#elif defined(CONFIG_MAX_DEPEND) || defined(CONFIG_LONG_DEPEND)
+#elif defined(CONFIG_MAX_DEPEND) || defined(CONFIG_LONG_DEPEND) ||             \
+    defined(CONFIG_BR_DEPEND)
   while (issue_num < idle_fu_num) {
     int max_dependency = -1;
     list<Inst_Entry>::iterator max_dep_it = entry.end();
