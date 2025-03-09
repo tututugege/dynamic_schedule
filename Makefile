@@ -1,5 +1,17 @@
+CXXSRCS = ./*.cpp
+
+CXXFLAGS := -I./include/ 
+
+CXXFLAGS += $(shell python3 -m pybind11 --include)
+
+CXXFLAGS += -shared -std=c++11 -fPIC
+
+all-shared:
+	g++ $(CXXFLAGS) $(CXXSRCS) -o cpu_simulator$(shell python3-config --extension-suffix)
+
 all:
-	g++ -I./include/ main.cpp IQ.cpp ISU.cpp BPU.cpp Cache.cpp -g
+	g++ -I./include/ $(CXXSRCS) -g
+
 run: all
 	./a.out
 

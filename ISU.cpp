@@ -1,11 +1,10 @@
 #include "ISU.h"
-#include "IQ.h"
 #include <cstdint>
 #include <iostream>
 
 Inst_Entry decode(uint32_t inst);
 
-void ISU::reset() {
+void ISU::init() {
   iq_set[0].init(ALU, 32, 4);
   iq_set[1].init(LDU, 16, 1);
   iq_set[2].init(STU, 8, 1);
@@ -22,6 +21,35 @@ void ISU::reset() {
   for (int i = 0; i < 32; i++) {
     rename_table.push_back(i);
   }
+}
+
+void ISU::reset() {
+  cache.reset();
+  bpu.reset();
+  sim_end = false;
+  stall = false;
+  commit_num = 0;
+
+  branch_num = 0;
+  mispred_num = 0;
+
+  for (int i = 0; i < MAX_PREG; i++) {
+    busy_table[i] = false;
+  }
+
+  idle_reg.clear();
+  for (int i = 32; i < MAX_PREG; i++) {
+    idle_reg.push_back(i);
+  }
+
+  for (int i = 0; i < 32; i++) {
+    rename_table[i] = i;
+  }
+
+  iq_set[0].reset();
+  iq_set[1].reset();
+  iq_set[2].reset();
+  iq_set[3].reset();
 }
 
 void ISU::rename(Inst_Entry &inst) {
@@ -121,12 +149,13 @@ void ISU::awake(uint32_t dest_preg) {
 
 void ISU::exec() {
   for (auto &iq : iq_set)
-    iq.exec();
+    iq.exec(this);
 }
 
 void ISU::deq() {
-  for (auto &iq : iq_set)
-    iq.deq();
+  for (auto &iq : iq_set) {
+    iq.deq(this);
+  }
 }
 
 void ISU::store_awake() {

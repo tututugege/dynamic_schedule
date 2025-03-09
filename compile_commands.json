@@ -4,21 +4,77 @@
       "/usr/bin/g++",
       "-c",
       "-I./include/",
+      "-I/usr/include/python3.10",
+      "-I/home/tututu/.local/lib/python3.10/site-packages/pybind11/include",
       "-g",
-      "main.cpp"
+      "./BPU.cpp"
     ],
     "directory": "/home/tututu/qimeng/dynamic_schedule",
-    "file": "/home/tututu/qimeng/dynamic_schedule/main.cpp"
+    "file": "/home/tututu/qimeng/dynamic_schedule/BPU.cpp"
   },
   {
     "arguments": [
       "/usr/bin/g++",
       "-c",
       "-I./include/",
+      "-I/usr/include/python3.10",
+      "-I/home/tututu/.local/lib/python3.10/site-packages/pybind11/include",
       "-g",
-      "IQ.cpp"
+      "./CPU.cpp"
+    ],
+    "directory": "/home/tututu/qimeng/dynamic_schedule",
+    "file": "/home/tututu/qimeng/dynamic_schedule/CPU.cpp"
+  },
+  {
+    "arguments": [
+      "/usr/bin/g++",
+      "-c",
+      "-I./include/",
+      "-I/usr/include/python3.10",
+      "-I/home/tututu/.local/lib/python3.10/site-packages/pybind11/include",
+      "-g",
+      "./Cache.cpp"
+    ],
+    "directory": "/home/tututu/qimeng/dynamic_schedule",
+    "file": "/home/tututu/qimeng/dynamic_schedule/Cache.cpp"
+  },
+  {
+    "arguments": [
+      "/usr/bin/g++",
+      "-c",
+      "-I./include/",
+      "-I/usr/include/python3.10",
+      "-I/home/tututu/.local/lib/python3.10/site-packages/pybind11/include",
+      "-g",
+      "./IQ.cpp"
     ],
     "directory": "/home/tututu/qimeng/dynamic_schedule",
     "file": "/home/tututu/qimeng/dynamic_schedule/IQ.cpp"
+  },
+  {
+    "arguments": [
+      "/usr/bin/g++",
+      "-c",
+      "-I./include/",
+      "-I/usr/include/python3.10",
+      "-I/home/tututu/.local/lib/python3.10/site-packages/pybind11/include",
+      "-g",
+      "./ISU.cpp"
+    ],
+    "directory": "/home/tututu/qimeng/dynamic_schedule",
+    "file": "/home/tututu/qimeng/dynamic_schedule/ISU.cpp"
+  },
+  {
+    "arguments": [
+      "/usr/bin/g++",
+      "-c",
+      "-I./include/",
+      "-I/usr/include/python3.10",
+      "-I/home/tututu/.local/lib/python3.10/site-packages/pybind11/include",
+      "-g",
+      "./main.cpp"
+    ],
+    "directory": "/home/tututu/qimeng/dynamic_schedule",
+    "file": "/home/tututu/qimeng/dynamic_schedule/main.cpp"
   }
 ]

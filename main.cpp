@@ -1,182 +1,24 @@
-#include "./BPU.h"
-#include "./Cache.h"
-#include "./IQ.h"
-#include "./ISU.h"
+#include "./CPU.h"
 #include <cstdint>
-#include <fstream>
 #include <iostream>
-
-typedef struct {
-  uint32_t br_pc;
-} Btrace_Node;
-
-typedef struct {
-  uint32_t addr;
-} Mtrace_Node;
-
-ISU isu;
-BPU bpu;
-Cache cache;
-
-int br_idx = 0;
-int mem_idx = 0;
-bool sim_end = false;
-bool stall = false;
-int commit_num = 0;
-int branch_num = 0;
-int mispred_num = 0;
-int cache_access = 0;
-int cache_miss = 0;
-
-Inst_Entry decode(uint32_t inst);
 
 int main() {
 
-  streamsize size;
-  char *ptr;
-  // 加载分支trace
-  ifstream btrace("./trace/core_btrace", ios::binary | ios::ate);
-  size = btrace.tellg();
-  int btrace_num = size / sizeof(Btrace_Node);
-  Btrace_Node br_trace[btrace_num];
-  btrace.seekg(0, ios::beg);
-  ptr = (char *)(&br_trace);
+  CPU cpu;
+  cpu.init_trace();
+  cpu.init_cpu();
+  cpu.reset();
 
-  if (!btrace.read(ptr, size)) {
-    cout << "branch trace read error" << endl;
-    exit(1);
-  }
-
-  // 加载访存trace
-  ifstream mtrace("./trace/core_mtrace", ios::binary | ios::ate);
-  size = mtrace.tellg();
-  int mtrace_num = size / sizeof(Mtrace_Node);
-  Mtrace_Node mem_trace[mtrace_num];
-  mtrace.seekg(0, ios::beg);
-  ptr = (char *)(&mem_trace);
-
-  if (!mtrace.read(ptr, size)) {
-    cout << "memory trace read error" << endl;
-    exit(1);
-  }
-
-  // 加载程序
-  ifstream image("./trace/coremark.bin", ios::binary | ios::ate);
-  size = image.tellg();
-  int inst_num = size / sizeof(uint32_t);
-  image.seekg(0, ios::beg);
-  uint32_t inst[inst_num];
-  ptr = (char *)(&inst);
-
-  if (!image.read(ptr, size)) {
-    cout << "program read error" << endl;
-    exit(1);
-  }
-
-  isu.reset();
-
-  int time = 0;
-
-  uint32_t number_PC = 0x80000000;
-  list<Inst_Entry> fetch_entry;
-  bool br_taken;
-  uint32_t next_pc;
-  uint32_t instruction;
-  Inst_Entry dec_inst;
-
-  while (!sim_end) {
+  while (!cpu.end()) {
     if (LOG) {
       cout << "********************" << endl;
-      cout << "-- TIME: " << dec << time++ << " --" << endl;
+      cout << "-- TIME: " << dec << cpu.time << " --" << endl;
     }
 
-    if (!stall) {
-      for (int i = 0; i < FETCH_WIDTH; i++) {
-        instruction = inst[(number_PC - 0x80000000) >> 2];
-        dec_inst = decode(instruction);
-        dec_inst.pc = number_PC;
-
-        if (dec_inst.type == LDU || dec_inst.type == STU) {
-          dec_inst.addr = mem_trace[mem_idx].addr;
-          mem_idx++;
-        }
-
-        if (dec_inst.type == BRU) {
-          // 检查分支预测是否正确
-          branch_num++;
-          bpu.bpu(number_PC, next_pc, br_taken);
-          bpu.bpu_update(number_PC, br_trace[br_idx].br_pc,
-                         br_trace[br_idx].br_pc != number_PC + 4);
-
-          if (br_trace[br_idx].br_pc != next_pc) {
-            next_pc = br_trace[br_idx].br_pc;
-            stall = true;
-            dec_inst.mispred = true;
-            mispred_num++;
-          } else {
-            dec_inst.mispred = false;
-          }
-
-          /*cout << hex << number_PC << " " << next_pc << endl;*/
-          br_idx++;
-        } else {
-          next_pc = number_PC + 4;
-          dec_inst.mispred = false;
-
-          if (dec_inst.ebarek)
-            stall = true;
-        }
-
-        fetch_entry.push_back(dec_inst);
-
-        number_PC = next_pc;
-        if (stall) {
-          break;
-        }
-      }
-    }
-
-    isu.exec();
-    isu.deq();
-    time++;
-
-    vector<list<Inst_Entry>::iterator> dispatch_it;
-
-    for (auto it = fetch_entry.begin(); it != fetch_entry.end(); it++) {
-      bool ret = isu.dispatch(*it);
-
-      if (ret == false) {
-        break;
-      } else {
-        dispatch_it.push_back(it);
-      }
-    }
-
-    for (auto it : dispatch_it) {
-      fetch_entry.erase(it);
-    }
+    cpu.step();
   }
 
-  if (time == MAX_SIM_TIME) {
-    cout << "TIME OUT" << endl;
-  } else {
-
-    while (!isu.is_empty()) {
-      isu.deq();
-      isu.exec();
-      time++;
-    }
-
-    cout << "#######################" << endl;
-    cout << "SUCCESS!!!" << endl;
-    cout << "CYCLE: " << dec << time << endl;
-    cout << "INST : " << dec << commit_num << endl;
-    cout << "IPC  : " << (double)commit_num / time << endl;
-    cout << "BRANCH : " << dec << branch_num << endl;
-    cout << "MISPRED: " << dec << mispred_num << endl;
-    cout << "CACHE HIT : " << dec << cache_access - cache_miss << endl;
-    cout << "CACHE MISS: " << dec << cache_miss << endl;
-  }
+  cpu.print_prf();
 
   return 0;
 }

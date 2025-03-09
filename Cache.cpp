@@ -1,9 +1,16 @@
 #include "Cache.h"
 #include <cstdlib>
 
-extern int cache_access;
-extern int cache_miss;
-
+void Cache::reset() {
+  cache_access = 0;
+  cache_miss = 0;
+  for (int i = 0; i < way_num; i++) {
+    for (int j = 0; j < (1 << index_width); j++) {
+      cache_valid[i][j] = false;
+      cache_tag[i][j] = 0;
+    }
+  }
+}
 int Cache::cache_select_evict() { return rand() % way_num; }
 
 // miss
