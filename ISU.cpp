@@ -1,14 +1,17 @@
 #include "ISU.h"
+#include <cassert>
+#include <cmath>
 #include <cstdint>
 #include <iostream>
+#include <vector>
 
 Inst_Entry decode(uint32_t inst);
 
 void ISU::init() {
-  iq_set[0].init(ALU, 32, 4);
-  iq_set[1].init(LDU, 16, 1);
-  iq_set[2].init(STU, 8, 1);
-  iq_set[3].init(BRU, 8, 1);
+  iq_set[0].init(ALU, 8, 4);
+  iq_set[1].init(LDU, 4, 1);
+  iq_set[2].init(STU, 4, 1);
+  iq_set[3].init(BRU, 4, 1);
 
   for (int i = 0; i < MAX_PREG; i++) {
     busy_table.push_back(false);
@@ -153,8 +156,81 @@ void ISU::exec() {
 }
 
 void ISU::deq() {
-  for (auto &iq : iq_set) {
+  for (auto &iq : iq_set)
     iq.deq(this);
+}
+
+bool ISU::deq(pair<uint32_t, uint32_t> issue_inst) {
+  int idle_fu = -1;
+  for (int i = 0; i < iq_set[issue_inst.first].fu_num; i++) {
+    if (iq_set[issue_inst.first].fu_set[i].ready) {
+      idle_fu = i;
+    }
+  }
+
+  if (idle_fu == -1) {
+    assert(0);
+  }
+
+  int issue_num = 0;
+  list<Inst_Entry>::iterator it = iq_set[issue_inst.first].entry.begin();
+  advance(it, issue_inst.second);
+  if ((!it->src1_en || !it->src1_busy) && (!it->src2_en || !it->src2_busy) &&
+      (it->type != LDU || it->pre_store_num == 0)) {
+    iq_set[issue_inst.first].issue(
+        it, &iq_set[issue_inst.first].fu_set[idle_fu], this);
+
+    // 不满足发射条件
+  } else {
+    assert(0);
+  }
+
+  iq_set[issue_inst.first].entry.erase(it);
+}
+
+void ISU::deq(vector<vector<uint32_t>> issue_idx) {
+  for (int i = 0; i < issue_idx.size(); i++) {
+    // 找到对应iq空闲的FU
+    vector<int> idle_fu_idx;
+    int idle_fu_num = 0;
+
+    for (int j = 0; j < iq_set[i].fu_num; j++) {
+
+      if (iq_set[i].fu_set[j].ready) {
+        idle_fu_idx.push_back(j);
+        idle_fu_num++;
+      }
+    }
+
+    // 发射的指令数大于执行单元
+    if (idle_fu_num < issue_idx[i].size()) {
+      cout << i << endl;
+      cout << idle_fu_num << endl;
+      cout << issue_idx[i].size() << endl;
+      assert(0);
+    }
+
+    int issue_num = 0;
+    vector<list<Inst_Entry>::iterator> issue_it;
+
+    for (auto idx : issue_idx[i]) {
+      list<Inst_Entry>::iterator it = iq_set[i].entry.begin();
+      advance(it, idx);
+      if ((!it->src1_en || !it->src1_busy) &&
+          (!it->src2_en || !it->src2_busy) &&
+          (it->type != LDU || it->pre_store_num == 0)) {
+        iq_set[i].issue(it, &iq_set[i].fu_set[idle_fu_idx[issue_num++]], this);
+        issue_it.push_back(it);
+
+        // 不满足发射条件
+      } else {
+        assert(0);
+      }
+    }
+
+    for (auto it : issue_it) {
+      iq_set[i].entry.erase(it);
+    }
   }
 }
 

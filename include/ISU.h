@@ -10,7 +10,8 @@
 #define MAX_PREG 96
 #define MAX_SIM_TIME 1000000
 #define FETCH_WIDTH 4
-#define CONFIG_OLDEST_FIRST
+/*#define CONFIG_GREEDY*/
+/*#define CONFIG_OLDEST_FIRST*/
 /*#define CONFIG_MAX_DEPEND*/
 /*#define CONFIG_LONG_DEPEND*/
 /*#define CONFIG_BR_DEPEND*/
@@ -98,6 +99,8 @@ public:
   bool is_empty();
   bool dispatch(Inst_Entry e);
   void deq();
+  bool deq(pair<uint32_t, uint32_t>);
+  void deq(vector<vector<uint32_t>> idx);
   void print();
   void exec();
   void rename(Inst_Entry &inst);
@@ -125,13 +128,13 @@ public:
     int fu_num;
     int max_entry_num;
     list<Inst_Entry> entry;
-    FU *fu_set;
+    vector<FU> fu_set;
 
     void init(Fu_Type type, int entry_num, int fu_num) {
       this->type = type;
       this->fu_num = fu_num;
       this->max_entry_num = entry_num;
-      fu_set = new FU[fu_num];
+      fu_set.resize(fu_num);
 
       for (int i = 0; i < fu_num; i++) {
         fu_set[i].type = type;

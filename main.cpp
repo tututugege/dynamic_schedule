@@ -10,10 +10,12 @@ int main() {
   cpu.reset();
 
   while (!cpu.end()) {
-    if (LOG) {
-      cout << "********************" << endl;
-      cout << "-- TIME: " << dec << cpu.time << " --" << endl;
-    }
+    /*if (LOG) {*/
+    /*if (cpu.time % 1000 == 0) {*/
+    /*  cout << "********************" << endl;*/
+    /*  cout << "-- TIME: " << dec << cpu.time << " --" << endl;*/
+    /*}*/
+    /*}*/
 
     cpu.step();
   }

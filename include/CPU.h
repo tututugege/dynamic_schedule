@@ -1,7 +1,8 @@
 #pragma once
 #include "ISU.h"
 #include <cstdint>
-#define CONFIG_PY
+#include <vector>
+/*#define CONFIG_PY*/
 
 class CPU {
 public:
@@ -10,14 +11,16 @@ public:
   int mem_idx = 0;
   uint32_t number_PC = 0x80000000;
   list<Inst_Entry> fetch_entry;
+  vector<vector<uint32_t>> greedy_issue = vector<vector<uint32_t>>(4);
 
   void init_trace();
   void init_cpu();
   void reset();
-  /*vector<int> get_state();*/
-  void get_state();
-  /*pair<float, vector<int>> step(vector<int> action);*/
+  vector<uint32_t> get_state();
+  int brute_force(int depth);
   void step();
+
+  pair<float, vector<uint32_t>> step(pair<uint32_t, uint32_t> issue);
   void print_prf();
   bool end();
 
