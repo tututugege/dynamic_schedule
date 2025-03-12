@@ -10,15 +10,14 @@
 #define MAX_PREG 96
 #define MAX_SIM_TIME 1000000
 #define FETCH_WIDTH 4
-/*#define CONFIG_GREEDY*/
-/*#define CONFIG_OLDEST_FIRST*/
+#define CONFIG_OLDEST_FIRST
 /*#define CONFIG_MAX_DEPEND*/
 /*#define CONFIG_LONG_DEPEND*/
 /*#define CONFIG_BR_DEPEND*/
 
 using namespace std;
 
-#define LOG 0
+#define LOG 1
 
 enum enum_number_opcode {
   number_0_opcode_lui = 0b0110111,   // lui
@@ -99,8 +98,7 @@ public:
   bool is_empty();
   bool dispatch(Inst_Entry e);
   void deq();
-  bool deq(pair<uint32_t, uint32_t>);
-  void deq(vector<vector<uint32_t>> idx);
+  bool deq(int, int);
   void print();
   void exec();
   void rename(Inst_Entry &inst);
@@ -110,6 +108,7 @@ public:
   vector<bool> busy_table;
   vector<uint32_t> idle_reg;
   vector<uint32_t> rename_table;
+  vector<uint32_t> to_awake;
 
   BPU bpu;
   Cache cache;
@@ -196,7 +195,8 @@ public:
       }
 
       if (it->dest_en && it->type != LDU) {
-        isu->awake(it->dest_preg);
+        /*isu->awake(it->dest_preg);*/
+        isu->to_awake.push_back(it->dest_preg);
       }
     }
 

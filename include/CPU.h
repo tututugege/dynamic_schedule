@@ -11,16 +11,16 @@ public:
   int mem_idx = 0;
   uint32_t number_PC = 0x80000000;
   list<Inst_Entry> fetch_entry;
-  vector<vector<uint32_t>> greedy_issue = vector<vector<uint32_t>>(4);
 
   void init_trace();
   void init_cpu();
   void reset();
-  vector<uint32_t> get_state();
+  vector<int> get_state();
+  vector<int> get_legal_actions();
   int brute_force(int depth);
   void step();
 
-  pair<float, vector<uint32_t>> step(pair<uint32_t, uint32_t> issue);
+  pair<float, vector<int>> step(int, int);
   void print_prf();
   bool end();
 
